@@ -1,3 +1,5 @@
+import org.apache.spark.sql.{DataFrame, SparkSession}
+
 class CsvReader {
   // read csv to dataframe with a schema from a json file
   def readCsvWithSchema(spark: SparkSession, csvPath: String, schemaPath: String): DataFrame = {
