@@ -1,5 +1,5 @@
 package models
 
-import java.time.LocalDateTime
+import java.sql.Timestamp
 
-case class Client(IdentifiantClient: Long, Nom: String, Prenom: String, Adresse: String, DateDeSouscription: LocalDateTime)
+case class Client(clientId: Long, lastName: String, firstName: String, address: String, subscriptionDate: Timestamp)
