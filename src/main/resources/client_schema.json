@@ -1,0 +1,23 @@
+{
+  "columns": [
+    {
+      "name": "clientId",
+      "dataType": "long"
+    },
+    {
+      "name": "lastName",
+      "dataType": "string"
+    },
+    {
+      "name": "firstName",
+      "dataType": "string"
+    },
+    {
+      "name": "address",
+      "dataType": "string"
+    },    {
+      "name": "subscriptionDate",
+      "dataType": "datetime"
+    }
+  ]
+}
