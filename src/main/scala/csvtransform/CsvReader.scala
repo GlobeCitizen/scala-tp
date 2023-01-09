@@ -2,13 +2,13 @@ package csvtransform
 
 import configs.ColumnTypeConfig
 import models.Client
+import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoders, SparkSession}
 import spray.json._
 import utils.MyJsonProtocol._
 
 object CsvReader {
-
   def readJsonSchema(sparkSession: SparkSession, path: String): StructType = {
     val source = scala.io.Source.fromFile(path)
     val lines = try source.mkString finally source.close()
@@ -33,17 +33,17 @@ object CsvReader {
     schema
   }
 
-  def readCsv(sparkSession: SparkSession, path: String): Dataset[Client] = {
+  def readCsv(sparkSession: SparkSession, path: String, fileName: String): Dataset[Client] = {
     val schema = readJsonSchema(sparkSession, "src/main/resources/client_schema.json")
-
+    val filePath = new Path(path, fileName).toString
     val df = sparkSession.read
       .format("csv")
       .option("header", "true")
       .option("delimiter", ",")
       .schema(schema)
-      .load(path)
+      .load(filePath)
 
-    val encoder = org.apache.spark.sql.Encoders.product[Client]
+    val encoder = Encoders.product[Client]
 
     val dataset = df.as(encoder)
     dataset

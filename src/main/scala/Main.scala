@@ -1,37 +1,58 @@
+import configs.Config
+import csvtransform.{CsvReader, CsvTransformer}
+import org.apache.spark.sql.SparkSession
+import scopt.OParser
+
 object Main extends App{
-  case class Config(identifiantClient: Long = 0)
+  // initiate spark session
+  val sparkSession = SparkSession.builder()
+    .appName("Spark CSV Reader")
+    .master("local[*]")
+    .getOrCreate()
 
-  val parser = new scopt.OptionParser[Config]("scala-tp") {
-    head("scala-tp", "0.1")
-    opt[Long]('i', "identifiant client")
-      .action((x, c) => c.copy(identifiantClient = x))
-      .required()
-      .text("Identifiant client")
+  sparkSession.sparkContext.setCheckpointDir("tmp")
+  sparkSession.sparkContext.setLogLevel("ERROR")
+
+  val builder = OParser.builder[Config]
+  val parser = {
+    import builder._
+    OParser.sequence(
+      programName("myApp"),
+      head("myApp", "1.0"),
+      opt[String]('i', "clientId")
+        .action((x, c) => c.copy(clientId = x.toLong))
+        .text("clientId is a long property")
+        .required(),
+      opt[String]('a', "action")
+        .action((x, c) => c.copy(action = x))
+        .text("action is a string property")
+        .required(),
+      opt[String]('p', "hdfsPath")
+        .action((x, c) => c.copy(hdfsPath = x))
+        .text("hdfsPath is a string property")
+        .required(),
+      opt[String]('f', "fileName")
+        .action((x, c) => c.copy(fileName = x))
+        .text("fileName is a string property")
+        .required()
+    )
   }
 
-
-  parser.parse(args, Config()) match {
-    case Some(config) =>
-      execute(config.identifiantClient)
-    case None =>
-      println("Error")
+  OParser.parse(parser, args, Config()) match {
+    case Some(config) => {
+      config.action match {
+        case "delete" => {
+          CsvTransformer.delete_client(sparkSession, config.hdfsPath, config.fileName, config.clientId)
+          println(s"Client ${config.clientId} deleted")
+        }
+        case "hash" => {
+          CsvTransformer.hash_client(sparkSession, config.hdfsPath, config.fileName, config.clientId)
+          println(s"Client ${config.clientId} hashed")
+        }
+        case _ => println("Action not found")
+      }
+    }
+    case _ => println("Config is invalid")
   }
-
-  def execute(identifiantClient: Long) = {
-    val spark = SparkSession.builder()
-      .appName("scala-tp")
-      .master("local[*]")
-      .getOrCreate()
-    val csvReader = new CsvReader()
-    val csvPath = "src/main/resources/clients.csv"
-    val schemaPath = "src/main/resources/clients_schema.json"
-    val df = csvReader.readCsvWithSchema(spark, csvPath, schemaPath)
-    df.show()
-    df.printSchema()
-    df.createOrReplaceTempView("clients")
-    val result = spark.sql(s"SELECT * FROM clients WHERE identifiant_client = $identifiantClient")
-    result.show()
-  }
-
 }
 
