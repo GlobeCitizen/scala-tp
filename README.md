@@ -14,7 +14,7 @@ Install my-project with npm
 ```bash
   git clone https://github.com/GlobeCitizen/scala-tp
   cd scala-tp
-  sbt package
+  sbt assembly
 ```
     
 ## Usage/Examples
@@ -27,7 +27,7 @@ Run the program with the following arguments:
 
 Example:
 ```bash
-spark-submit --class Main target/scala-2.X/myApp-assembly-0.1.jar  -i 12345 -a delete -p hdfs://localhost:9000/ -f input.csv
+spark-submit --class Main target/scala-2.11/tp-scala_2.11-0.1.0-SNAPSHOT.jar  -i 12345 -a delete -p hdfs://localhost:9000/ -f input.csv
 
 ```
 
